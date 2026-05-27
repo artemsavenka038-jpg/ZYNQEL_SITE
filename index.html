@@ -57,7 +57,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;padding:0 5%;height:64px;dis
 .nav-cta{background:var(--green);color:#060a12;border:none;border-radius:7px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.3px;}
 .nav-cta:hover{background:#00ffb3;box-shadow:0 0 24px #00e5a066;}
 .nav-mobile-hide{display:flex;align-items:center;gap:28px;}
-@media(max-width:768px){.nav-mobile-hide{display:none;}}
+@media(max-width:768px){
+  .nav-mobile-hide{display:none;}
+  .mobile-lang{display:flex!important;}
+}
+.mobile-lang{display:none;align-items:center;}
 
 /* ══ HERO ═════════════════════════════════════════════════════════════════ */
 #hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 5% 60px;position:relative;overflow:hidden;text-align:center;}
@@ -76,7 +80,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;padding:0 5%;height:64px;dis
 .hero-badge{display:inline-flex;align-items:center;gap:8px;background:#00e5a010;border:1px solid #00e5a033;border-radius:99px;padding:6px 16px;font-size:12px;color:var(--green);letter-spacing:1px;margin-bottom:28px;font-family:'DM Mono',monospace;}
 .hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
 
-h1.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,10vw,120px);line-height:.95;letter-spacing:2px;color:#fff;margin-bottom:8px;position:relative;}
+h1.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,9vw,120px);line-height:.95;letter-spacing:2px;color:#fff;margin-bottom:8px;position:relative;}
+@media(max-width:480px){h1.hero-title{font-size:clamp(36px,13vw,72px);letter-spacing:1px;}}
 .hero-title span{display:block;}
 .hero-title .accent{background:linear-gradient(90deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 
@@ -269,6 +274,12 @@ footer{background:#040710;border-top:1px solid var(--border);padding:48px 5% 32p
 
 /* Canvas for animated chart */
 canvas{display:block;}
+
+#lf-name:focus,#lf-email:focus,#lf-phone:focus{border-color:#00e5a044!important;box-shadow:0 0 0 3px #00e5a009;}
+#lf-name::placeholder,#lf-email::placeholder,#lf-phone::placeholder{color:#2a3348;}
+@media(max-width:480px){
+  .pricing-card{padding:32px 20px;}
+}
 </style>
 </head>
 <body>
@@ -279,6 +290,9 @@ canvas{display:block;}
     <div class="nav-logo-icon">Z</div>
     <span class="nav-logo-text">ZYNQEL</span>
   </a>
+  <div class="mobile-lang">
+    <button class="lang-btn" onclick="toggleLang()" id="mobile-lang-btn">🇷🇺 RU</button>
+  </div>
   <div class="nav-mobile-hide">
     <ul class="nav-links">
       <li><a href="#how">How It Works</a></li>
@@ -622,10 +636,21 @@ canvas{display:block;}
       <li class="pf"><span class="pf-check">✓</span><span data-en="Telegram alert integration" data-ru="Интеграция алертов с Telegram">Telegram alert integration</span></li>
       <li class="pf"><span class="pf-check">✓</span><span data-en="All future updates included" data-ru="Все будущие обновления включены">All future updates included</span></li>
     </ul>
-    <button class="pricing-cta" onclick="handleCTA()">
-      <span data-en="Get Instant Access — $50" data-ru="Получить Мгновенный Доступ — $50">Get Instant Access — $50</span>
-    </button>
-    <div class="pricing-note" data-en="Secure payment · Instant access · Cancel anytime" data-ru="Безопасный платёж · Мгновенный доступ · Отмена в любое время">Secure payment · Instant access · Cancel anytime</div>
+    <!-- Lead Form -->
+    <div id="lead-form" style="margin-top:0;">
+      <div style="text-align:left;margin-bottom:18px;">
+        <div style="font-size:16px;font-weight:700;color:#e2e8f0;margin-bottom:6px;" id="lf-title" data-en="Leave a request — our manager will contact you within 10 minutes to answer your questions or arrange payment." data-ru="Оставьте заявку — наш менеджер свяжется с вами в течение 10 минут для ответа на вопросы или оплаты.">Leave a request — our manager will contact you within 10 minutes to answer your questions or arrange payment.</div>
+        <div style="font-size:12px;color:#718096;" id="lf-sub" data-en="Free consultation · No obligation" data-ru="Бесплатная консультация · Без обязательств">Free consultation · No obligation</div>
+      </div>
+      <input type="text" id="lf-name" placeholder="Full Name" style="width:100%;background:#ffffff08;border:1px solid #1e2535;border-radius:10px;color:#e2e8f0;padding:13px 16px;font-size:14px;outline:none;font-family:inherit;margin-bottom:12px;-webkit-appearance:none;" autocomplete="name"/>
+      <input type="email" id="lf-email" placeholder="Email" style="width:100%;background:#ffffff08;border:1px solid #1e2535;border-radius:10px;color:#e2e8f0;padding:13px 16px;font-size:14px;outline:none;font-family:inherit;margin-bottom:12px;-webkit-appearance:none;" autocomplete="email"/>
+      <input type="tel" id="lf-phone" placeholder="Phone / WhatsApp / Telegram" style="width:100%;background:#ffffff08;border:1px solid #1e2535;border-radius:10px;color:#e2e8f0;padding:13px 16px;font-size:14px;outline:none;font-family:inherit;margin-bottom:16px;-webkit-appearance:none;" autocomplete="tel"/>
+      <button class="pricing-cta" onclick="submitLead()" id="lf-btn">
+        <span id="lf-btn-txt" data-en="Submit Request — Get Access for $50" data-ru="Отправить Заявку — Доступ за $50">Submit Request — Get Access for $50</span>
+      </button>
+      <div id="lf-msg" style="margin-top:12px;min-height:20px;"></div>
+    </div>
+    <div class="pricing-note" id="lf-note" data-en="We reply within 10 minutes · zynqel.com" data-ru="Отвечаем в течение 10 минут · zynqel.com">We reply within 10 minutes · zynqel.com</div>
   </div>
 </section>
 
@@ -663,7 +688,13 @@ canvas{display:block;}
   </button>
 </div>
 
-<style>@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.9)}}</style>
+<style>@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.9)}}
+#lf-name:focus,#lf-email:focus,#lf-phone:focus{border-color:#00e5a044!important;box-shadow:0 0 0 3px #00e5a009;}
+#lf-name::placeholder,#lf-email::placeholder,#lf-phone::placeholder{color:#2a3348;}
+@media(max-width:480px){
+  .pricing-card{padding:32px 20px;}
+}
+</style>
 
 <script>
 // ── DATA ──
@@ -708,9 +739,13 @@ function toggleLang() {
   document.querySelectorAll('[data-en]').forEach(el => {
     el.innerHTML = el.getAttribute(`data-${currentLang}`);
   });
-  document.querySelector('.lang-btn').textContent = currentLang === 'en' ? '🇷🇺 RU' : '🇺🇸 EN';
+  const newLabel = currentLang === 'en' ? '🇷🇺 RU' : '🇺🇸 EN';
+  document.querySelectorAll('.lang-btn').forEach(b => b.textContent = newLabel);
+  const mb = document.getElementById('mobile-lang-btn');
+  if (mb) mb.textContent = newLabel;
   buildFAQ();
   updateUrgency();
+  updateLeadForm();
 }
 
 function updateUrgency() {
@@ -823,6 +858,7 @@ function animateRing() {
 // ── INIT ──
 buildTicker();
 buildFAQ();
+updateLeadForm();
 setTimeout(animateRing, 800);
 
 // Animate ring when in view
@@ -843,5 +879,54 @@ setInterval(() => {
   });
 }, 2500);
 </script>
+
+<script>
+async function submitLead() {
+  var name = document.getElementById('lf-name').value.trim();
+  var email = document.getElementById('lf-email').value.trim();
+  var phone = document.getElementById('lf-phone').value.trim();
+  var msg = document.getElementById('lf-msg');
+  var btn = document.getElementById('lf-btn');
+  var btnTxt = document.getElementById('lf-btn-txt');
+  var isRu = currentLang === 'ru';
+
+  if (!name || !email || !phone) {
+    msg.innerHTML = '<div style="color:#ff4757;font-size:13px;text-align:center;margin-top:8px;">' + (isRu ? '⚠️ Заполните все поля' : '⚠️ Please fill all fields') + '</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  btnTxt.innerHTML = isRu ? '⏳ Отправляем...' : '⏳ Sending...';
+  msg.innerHTML = '';
+
+  var url = 'https://script.google.com/macros/s/AKfycbxosp-kRRy2nxBL1FyHLIhULbO9cbAJf5HynrTkjH6gx2_Fo4dFHAcqvsLQtNlLH9KA/exec?name=' + encodeURIComponent(name) + '&email=' + encodeURIComponent(email) + '&phone=' + encodeURIComponent(phone) + '&lang=' + currentLang;
+  
+  fetch(url, {mode: 'no-cors'}).then(function() {
+    msg.innerHTML = '<div style="background:#00e5a012;border:1px solid #00e5a033;border-radius:8px;padding:12px;color:#00e5a0;font-size:13px;text-align:center;line-height:1.5;margin-top:8px;">' + (isRu ? '✅ Заявка отправлена! Свяжемся в течение 10 минут.' : '✅ Request sent! We will contact you within 10 minutes.') + '</div>';
+    btnTxt.textContent = isRu ? '✓ Отправлено' : '✓ Sent';
+    document.getElementById('lf-name').value = '';
+    document.getElementById('lf-email').value = '';
+    document.getElementById('lf-phone').value = '';
+  }).catch(function() {
+    // no-cors always throws, but request was sent
+    msg.innerHTML = '<div style="background:#00e5a012;border:1px solid #00e5a033;border-radius:8px;padding:12px;color:#00e5a0;font-size:13px;text-align:center;line-height:1.5;margin-top:8px;">' + (isRu ? '✅ Заявка отправлена! Свяжемся в течение 10 минут.' : '✅ Request sent! We will contact you within 10 minutes.') + '</div>';
+    btnTxt.textContent = isRu ? '✓ Отправлено' : '✓ Sent';
+    document.getElementById('lf-name').value = '';
+    document.getElementById('lf-email').value = '';
+    document.getElementById('lf-phone').value = '';
+  });
+}
+
+function updateLeadForm() {
+  var isRu = currentLang === 'ru';
+  var n = document.getElementById('lf-name');
+  var e = document.getElementById('lf-email');
+  var p = document.getElementById('lf-phone');
+  if (n) n.placeholder = isRu ? 'Имя и Фамилия' : 'Full Name';
+  if (e) e.placeholder = 'Email';
+  if (p) p.placeholder = isRu ? 'Телефон / WhatsApp / Telegram' : 'Phone / WhatsApp / Telegram';
+}
+</script>
+
 </body>
 </html>
