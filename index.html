@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZYNQEL — Crypto Market Intelligence</title>
+<meta name="description" content="ZYNQEL turned $1,000 into $1,420 in out-of-sample backtests by reading the crowd — funding, open interest, BTC regime and 11 signals across 11 coins. Honest, transparent, no hype."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#060a12; --bg2:#0a0f1e; --bg3:#0c1322;
+  --green:#00e5a0; --blue:#3b82f6; --red:#ff3a4e; --gold:#f5c842;
+  --text:#e8edf5; --muted:#5a6580; --muted2:#8a96b0;
+  --border:#151d2e; --border2:#1e2a40;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;background:#060a12;color-scheme:dark;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100%;}
+::selection{background:var(--green);color:#060a12;}
+.mono{font-family:'DM Mono',monospace;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px;}
+a{color:inherit;text-decoration:none;}
+
+.bg-orb{position:fixed;border-radius:50%;filter:blur(120px);opacity:.16;pointer-events:none;z-index:0;}
+.orb-1{width:520px;height:520px;background:var(--blue);top:-160px;left:-120px;}
+.orb-2{width:440px;height:440px;background:var(--green);bottom:8%;right:-120px;opacity:.13;}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:50;backdrop-filter:blur(14px);background:rgba(6,10,18,.72);border-bottom:1px solid var(--border);}
+.nav-in{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+.logo{display:flex;align-items:center;gap:11px;}
+.logo-ic{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:21px;color:#060a12;}
+.logo-tx{font-family:'Bebas Neue';font-size:23px;letter-spacing:3px;}
+.nav-links{display:flex;gap:30px;}
+.nav-links a{color:var(--muted);font-size:13.5px;letter-spacing:.4px;transition:color .2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-right{display:flex;align-items:center;gap:14px;}
+.lang-btn{background:transparent;border:1px solid var(--border2);border-radius:7px;padding:6px 12px;font-size:12px;color:var(--muted2);cursor:pointer;font-family:'DM Mono';transition:all .2s;}
+.lang-btn:hover{border-color:#00e5a044;color:var(--text);}
+.nav-cta{background:var(--green);color:#060a12;border:none;border-radius:7px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:transform .15s,box-shadow .2s;}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px #00e5a033;}
+@media(max-width:820px){.nav-links{display:none;}}
+
+/* ===== HERO: result hook + price first ===== */
+#hero{position:relative;z-index:2;padding:128px 0 56px;text-align:center;}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:#00e5a00d;border:1px solid #00e5a030;border-radius:99px;padding:7px 17px;font-size:11.5px;color:var(--green);letter-spacing:1.5px;margin-bottom:26px;font-family:'DM Mono';}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 #00e5a066;}50%{opacity:.6;box-shadow:0 0 0 6px #00e5a000;}}
+.hero-kicker{font-size:clamp(15px,2.2vw,20px);color:var(--muted2);margin-bottom:10px;letter-spacing:.3px;}
+.hero-kicker b{color:var(--text);font-weight:600;}
+h1.hero{font-family:'Bebas Neue';font-size:clamp(46px,9.5vw,124px);line-height:.92;letter-spacing:2px;color:#fff;margin-bottom:22px;}
+h1.hero .accent{background:linear-gradient(90deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* Russian: Bebas has poor Cyrillic, swap to Oswald and dial size down so long words sit neatly */
+body.lang-ru h1.hero{font-family:'Oswald',sans-serif;font-weight:600;font-size:clamp(34px,6.4vw,82px);letter-spacing:1px;line-height:1.02;}
+body.lang-ru .section-title{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.5px;font-size:clamp(30px,4.6vw,56px);}
+body.lang-ru .result-line{font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:0;}
+body.lang-ru .bt-big{font-family:'Oswald',sans-serif;font-weight:700;}
+body.lang-ru .midcta h2{font-family:'Oswald',sans-serif;font-weight:600;}
+body.lang-ru .mode-nm,body.lang-ru .plan-price,body.lang-ru .bp-amt,body.lang-ru .mcp .a{font-family:'Oswald',sans-serif;font-weight:600;}
+.hero-cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:34px 0 16px;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);border-radius:12px;padding:18px 32px;font-size:15px;font-weight:500;color:var(--muted2);cursor:pointer;transition:all .25s;font-family:inherit;}
+.btn-ghost:hover{border-color:#00e5a040;color:var(--text);}
+.hero-prices{display:inline-flex;gap:26px;flex-wrap:wrap;justify-content:center;margin-top:6px;font-size:13.5px;color:var(--muted);}
+.hero-prices b{color:var(--green);font-family:'DM Mono';font-size:17px;}
+.hero-prices .sep{color:var(--border2);}
+/* standalone result section (moved below hero) */
+.result-sec{text-align:center;}
+.result-line{font-family:'Bebas Neue';font-size:clamp(58px,13vw,150px);line-height:.86;letter-spacing:2px;color:#fff;margin:6px 0 6px;}
+.result-line .from{color:var(--muted);}
+.result-line .arrow{color:var(--green);}
+.result-line .to{background:linear-gradient(90deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.result-pct{display:inline-flex;align-items:center;gap:14px;font-family:'DM Mono';font-size:clamp(14px,2vw,17px);color:var(--muted2);margin-bottom:6px;flex-wrap:wrap;justify-content:center;}
+.result-pct b{color:var(--green);}
+.result-pct .pipe{color:var(--border2);}
+.hero-disc{font-size:11px;color:var(--muted);max-width:600px;margin:10px auto 0;line-height:1.55;font-style:italic;}
+.hero-what{font-size:clamp(14px,1.8vw,17px);color:var(--text);max-width:620px;margin:24px auto 0;line-height:1.6;}
+.hero-what b{color:var(--green);font-weight:600;}
+
+/* price box up top */
+.buy-box{margin:30px auto 0;max-width:560px;background:linear-gradient(180deg,#0c1322,#0a0f1e);border:1px solid #1c5a44;border-radius:18px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.buy-prices{display:flex;gap:14px;justify-content:center;margin-bottom:18px;flex-wrap:wrap;}
+.buy-price{flex:1;min-width:150px;background:#ffffff05;border:1px solid var(--border2);border-radius:13px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s,transform .15s;}
+.buy-price:hover{border-color:#00e5a055;transform:translateY(-2px);}
+.buy-price.best{border-color:#00e5a055;background:#00e5a00a;position:relative;}
+.bp-tag{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--green);color:#060a12;font-family:'DM Mono';font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 11px;border-radius:99px;}
+.bp-amt{font-family:'Bebas Neue';font-size:46px;line-height:.9;color:#fff;}
+.bp-amt .per{font-family:'DM Sans';font-size:14px;color:var(--muted);font-weight:400;}
+.bp-note{font-size:11px;color:var(--muted2);margin-top:5px;}
+.btn-primary{display:block;width:100%;background:linear-gradient(135deg,var(--green),var(--blue));border:none;border-radius:12px;padding:18px;font-size:17px;font-weight:700;color:#060a12;cursor:pointer;letter-spacing:.4px;transition:transform .18s,box-shadow .25s;font-family:inherit;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 40px #00e5a040;}
+.buy-sub{margin-top:13px;font-size:12px;color:var(--muted);text-align:center;}
+.buy-sub a{color:var(--muted2);text-decoration:underline;cursor:pointer;}
+.buy-sub a:hover{color:var(--text);}
+
+/* ticker */
+.ticker{position:relative;z-index:2;margin-top:44px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;background:rgba(10,15,30,.4);}
+.ticker-track{display:flex;white-space:nowrap;animation:scroll 38s linear infinite;padding:13px 0;}
+.ticker-item{display:inline-flex;align-items:center;gap:9px;padding:0 26px;font-family:'DM Mono';font-size:12.5px;border-right:1px solid var(--border);}
+.t-name{color:var(--muted);}.t-price{color:var(--text);}.t-up{color:var(--green);}.t-down{color:var(--red);}
+@keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+.section{position:relative;z-index:2;padding:88px 0;}
+.section-label{font-family:'DM Mono';font-size:12px;color:var(--green);letter-spacing:3px;text-align:center;margin-bottom:16px;}
+.section-title{font-family:'Bebas Neue';font-size:clamp(34px,5.4vw,68px);line-height:1;letter-spacing:1px;text-align:center;color:#fff;margin-bottom:18px;}
+.section-sub{font-size:16px;color:var(--muted2);text-align:center;max-width:640px;margin:0 auto 52px;line-height:1.7;}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.3,1),transform .7s cubic-bezier(.2,.7,.3,1);}
+.reveal.in{opacity:1;transform:none;}
+
+/* proof: preview + edge */
+.preview-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;}
+@media(max-width:900px){.preview-grid{grid-template-columns:1fr;gap:34px;}}
+.app-card{background:linear-gradient(180deg,#0b1322,#0a0f1e);border:1px solid var(--border2);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5);}
+.app-top{background:#070c18;padding:11px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #0f1628;}
+.app-dot{width:9px;height:9px;border-radius:50%;}
+.app-url{margin-left:10px;font-family:'DM Mono';font-size:11px;color:var(--muted);}
+.app-body{padding:22px;}
+.ab-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.ab-pair{font-family:'DM Mono';font-size:13px;color:var(--muted2);letter-spacing:1px;}
+.ab-tags{display:flex;gap:6px;}
+.ab-tag{font-family:'DM Mono';font-size:9.5px;padding:3px 8px;border-radius:6px;border:1px solid;letter-spacing:.5px;}
+.tg-green{color:var(--green);border-color:#00e5a040;background:#00e5a00d;}
+.tg-blue{color:var(--blue);border-color:#3b82f640;background:#3b82f60d;}
+.ab-row{display:flex;gap:28px;margin-bottom:6px;}
+.ab-metric .l{font-family:'DM Mono';font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;}
+.ab-metric .price{font-family:'DM Mono';font-size:26px;font-weight:500;}
+.ab-metric .big{font-family:'Bebas Neue';font-size:40px;line-height:1;}
+.ab-snap{font-family:'DM Mono';font-size:10px;color:var(--muted);margin-top:2px;}
+.ab-bar{height:4px;border-radius:3px;background:#0f1628;margin:14px 0 6px;position:relative;overflow:hidden;}
+.ab-bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;}
+.ab-scale{display:flex;justify-content:space-between;font-family:'DM Mono';font-size:9px;color:var(--muted);}
+.ab-action{margin-top:20px;padding:18px;border-radius:13px;background:linear-gradient(135deg,#0d2820,#0a1424);border:1px solid #15392c;}
+.ab-action .lab{font-family:'DM Mono';font-size:10px;color:var(--green);letter-spacing:2px;margin-bottom:8px;}
+.ab-action .verdict{font-size:23px;font-weight:700;line-height:1.1;margin-bottom:9px;}
+.ab-hold{display:inline-block;font-family:'DM Mono';font-size:11px;font-weight:700;color:var(--gold);background:#f5c8421f;border:1px solid #f5c84233;border-radius:6px;padding:3px 9px;margin-bottom:11px;}
+.ab-zone{font-family:'DM Mono';font-size:13px;color:var(--text);margin-bottom:5px;}
+.ab-zone span{color:var(--muted);}
+.ab-cond{font-size:12.5px;color:var(--muted2);}
+.ab-factors{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px;}
+.ab-factor{font-family:'DM Mono';font-size:10.5px;color:var(--muted2);background:#ffffff06;border:1px solid var(--border2);border-radius:7px;padding:5px 10px;}
+.pv-text h2{font-family:'Bebas Neue';font-size:clamp(32px,4.6vw,56px);line-height:1.02;margin-bottom:18px;color:#fff;}
+.pv-text p{font-size:15px;color:var(--muted2);line-height:1.75;margin-bottom:16px;}
+.pv-list{list-style:none;margin-top:18px;}
+.pv-list li{display:flex;gap:11px;align-items:flex-start;font-size:14.5px;color:var(--text);margin-bottom:13px;}
+.pv-list .ic{color:var(--green);font-weight:700;flex-shrink:0;}
+
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:920px;margin:0 auto;}
+@media(max-width:760px){.modes{grid-template-columns:1fr;}}
+.mode{background:linear-gradient(180deg,var(--bg2),var(--bg));border:1px solid var(--border2);border-radius:18px;padding:30px;position:relative;overflow:hidden;}
+.mode::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;}
+.mode.safe::before{background:linear-gradient(90deg,var(--green),transparent);}
+.mode.active::before{background:linear-gradient(90deg,var(--gold),transparent);}
+.mode-h{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.mode-ic{font-size:22px;}
+.mode-nm{font-family:'Bebas Neue';font-size:30px;letter-spacing:1px;}
+.mode-tag{font-family:'DM Mono';font-size:10px;letter-spacing:1px;padding:3px 9px;border-radius:6px;margin-left:auto;}
+.mode.safe .mode-tag{color:var(--green);background:#00e5a012;border:1px solid #00e5a033;}
+.mode.active .mode-tag{color:var(--gold);background:#f5c84212;border:1px solid #f5c84233;}
+.mode-desc{font-size:13.5px;color:var(--muted2);line-height:1.65;margin-bottom:20px;min-height:62px;}
+.mode-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.ms{background:#ffffff05;border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center;}
+.ms .v{font-family:'Bebas Neue';font-size:30px;line-height:1;}
+.ms .k{font-family:'DM Mono';font-size:9px;color:var(--muted);letter-spacing:.5px;margin-top:4px;}
+.ms.g .v{color:var(--green);}.ms.b .v{color:var(--blue);}.ms.gd .v{color:var(--gold);}
+
+/* backtest */
+.bt-wrap{max-width:960px;margin:0 auto;background:linear-gradient(180deg,var(--bg2),var(--bg));border:1px solid var(--border2);border-radius:20px;padding:38px;}
+.bt-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:18px;margin-bottom:8px;}
+.bt-big{font-family:'Bebas Neue';font-size:clamp(54px,8vw,92px);line-height:.9;color:#fff;}
+.bt-big .pl{background:linear-gradient(90deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.bt-sub{font-family:'DM Mono';font-size:12px;color:var(--muted2);letter-spacing:.5px;}
+.bt-kpis{display:flex;gap:24px;flex-wrap:wrap;}
+.bt-kpi .v{font-family:'DM Mono';font-size:22px;font-weight:500;}
+.bt-kpi .k{font-family:'DM Mono';font-size:9.5px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.chart{margin-top:26px;background:#070c18;border:1px solid var(--border);border-radius:14px;padding:18px;}
+.bt-disc{font-size:11.5px;color:var(--muted);text-align:center;margin-top:18px;line-height:1.6;font-style:italic;}
+
+/* demo */
+.demo-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:36px;align-items:start;}
+@media(max-width:900px){.demo-grid{grid-template-columns:1fr;}}
+.demo-controls{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:26px;}
+.dc-label{font-family:'DM Mono';font-size:11px;color:var(--muted);letter-spacing:1px;margin:18px 0 9px;}
+.dc-label:first-child{margin-top:0;}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;}
+.chip{background:#ffffff06;border:1px solid var(--border2);border-radius:9px;padding:9px 14px;font-size:13px;color:var(--muted2);cursor:pointer;transition:all .18s;font-family:'DM Mono';}
+.chip:hover{border-color:#00e5a044;color:var(--text);}
+.chip.on{background:#00e5a014;border-color:var(--green);color:var(--green);}
+.demo-note{font-size:11px;color:var(--muted);margin-top:22px;line-height:1.6;font-style:italic;}
+
+/* mid CTA (price 2nd time) */
+.midcta{max-width:780px;margin:0 auto;text-align:center;background:linear-gradient(135deg,#0d1f1a,#0a1424);border:1px solid #1c5a44;border-radius:20px;padding:46px 32px;}
+.midcta h2{font-family:'Bebas Neue';font-size:clamp(34px,5.5vw,60px);line-height:1;color:#fff;margin-bottom:14px;}
+.midcta p{font-size:15px;color:var(--muted2);margin-bottom:26px;max-width:520px;margin-left:auto;margin-right:auto;}
+.midcta-prices{display:inline-flex;gap:28px;margin-bottom:24px;flex-wrap:wrap;justify-content:center;}
+.mcp{font-family:'DM Mono';}
+.mcp .a{font-family:'Bebas Neue';font-size:42px;color:#fff;line-height:1;}
+.mcp .b{font-size:11px;color:var(--muted);letter-spacing:.5px;}
+.midcta .btn-primary{max-width:340px;margin:0 auto;}
+
+/* streams (education, moved down) */
+.streams{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:14px;margin-top:10px;}
+.stream{background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:18px;transition:transform .2s,border-color .2s;}
+.stream:hover{transform:translateY(-3px);border-color:#00e5a033;}
+.stream .ic{font-size:20px;margin-bottom:10px;}
+.stream .nm{font-size:14px;font-weight:600;margin-bottom:5px;}
+.stream .ds{font-size:12px;color:var(--muted);line-height:1.5;}
+.stream .src{font-family:'DM Mono';font-size:9px;color:var(--green);letter-spacing:.5px;margin-top:9px;}
+.streams-foot{text-align:center;margin-top:34px;font-family:'DM Mono';font-size:13px;color:var(--muted2);}
+.streams-foot b{color:var(--green);}
+
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px;}
+.feat{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;transition:transform .2s,border-color .2s;}
+.feat:hover{transform:translateY(-3px);border-color:#00e5a02a;}
+.feat .ic{font-size:24px;margin-bottom:13px;}
+.feat h3{font-size:16px;font-weight:600;margin-bottom:7px;}
+.feat p{font-size:13px;color:var(--muted);line-height:1.6;}
+
+.honest{max-width:880px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:700px){.honest{grid-template-columns:1fr;}}
+.hns{display:flex;gap:14px;align-items:flex-start;background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:20px;}
+.hns .ic{font-size:20px;flex-shrink:0;}
+.hns h4{font-size:15px;font-weight:600;margin-bottom:5px;}
+.hns p{font-size:13px;color:var(--muted);line-height:1.6;}
+
+/* final pricing + lead */
+.price-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:780px;margin:0 auto 30px;}
+@media(max-width:720px){.price-grid{grid-template-columns:1fr;}}
+.plan{background:linear-gradient(180deg,var(--bg2),var(--bg));border:1px solid var(--border2);border-radius:18px;padding:32px;position:relative;}
+.plan.feat-plan{border-color:#00e5a055;box-shadow:0 0 50px #00e5a012;}
+.plan-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--green);color:#060a12;font-family:'DM Mono';font-size:10px;font-weight:700;letter-spacing:1px;padding:4px 14px;border-radius:99px;}
+.plan-nm{font-family:'DM Mono';font-size:12px;color:var(--muted2);letter-spacing:2px;margin-bottom:14px;}
+.plan-price{font-family:'Bebas Neue';font-size:64px;line-height:.9;color:#fff;}
+.plan-price .per{font-family:'DM Sans';font-size:16px;color:var(--muted);font-weight:400;}
+.plan-desc{font-size:13px;color:var(--muted2);margin:12px 0 20px;line-height:1.6;min-height:40px;}
+.plan-list{list-style:none;margin-bottom:24px;}
+.plan-list li{display:flex;gap:10px;font-size:13.5px;color:var(--text);margin-bottom:11px;align-items:flex-start;}
+.plan-list .ic{color:var(--green);flex-shrink:0;}
+.lead{max-width:440px;margin:0 auto;background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:26px;}
+.lead input{width:100%;background:#ffffff08;border:1px solid var(--border2);border-radius:10px;color:var(--text);padding:13px 16px;font-size:14px;outline:none;font-family:inherit;margin-bottom:12px;-webkit-appearance:none;}
+.lead input:focus{border-color:#00e5a044;box-shadow:0 0 0 3px #00e5a009;}
+.lead input::placeholder{color:#2a3348;}
+.pricing-cta{width:100%;background:linear-gradient(135deg,var(--green),var(--blue));border:none;border-radius:11px;padding:15px;font-size:15px;font-weight:700;color:#060a12;cursor:pointer;font-family:inherit;transition:transform .15s;}
+.pricing-cta:hover{transform:translateY(-1px);}
+.pricing-cta:disabled{opacity:.6;cursor:default;}
+.pricing-note{text-align:center;font-size:12px;color:var(--muted);margin-top:14px;}
+
+.faq-list{max-width:760px;margin:0 auto;}
+.faq-item{border-bottom:1px solid var(--border);padding:20px 0;cursor:pointer;}
+.faq-q{display:flex;justify-content:space-between;align-items:center;gap:16px;font-size:16px;font-weight:600;}
+.faq-q .pm{color:var(--green);font-size:22px;flex-shrink:0;transition:transform .2s;}
+.faq-item.open .pm{transform:rotate(45deg);}
+.faq-a{font-size:14px;color:var(--muted2);line-height:1.7;max-height:0;overflow:hidden;transition:max-height .3s,margin .3s;}
+.faq-item.open .faq-a{max-height:260px;margin-top:13px;}
+
+footer{position:relative;z-index:2;border-top:1px solid var(--border);padding:50px 0 36px;}
+.foot-in{display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;align-items:flex-start;}
+.foot-disc{max-width:560px;font-size:11.5px;color:var(--muted);line-height:1.7;}
+.foot-links{display:flex;gap:22px;font-size:13px;color:var(--muted);}
+.foot-links a:hover{color:var(--text);}
+.foot-copy{margin-top:30px;font-family:'DM Mono';font-size:11px;color:var(--muted);text-align:center;}
+</style>
+</head>
+<body>
+<div class="bg-orb orb-1"></div>
+<div class="bg-orb orb-2"></div>
+<div class="grain"></div>
+
+<nav>
+  <div class="nav-in">
+    <a href="#hero" class="logo"><div class="logo-ic">Z</div><div class="logo-tx">ZYNQEL</div></a>
+    <div class="nav-links">
+      <a href="#proof" data-en="Proof" data-ru="Доказательство">Proof</a>
+      <a href="#demo" data-en="Live Demo" data-ru="Демо">Live Demo</a>
+      <a href="#data" data-en="The Data" data-ru="Данные">The Data</a>
+      <a href="#pricing" data-en="Pricing" data-ru="Цена">Pricing</a>
+      <a href="#faq" data-en="FAQ" data-ru="Вопросы">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <button class="lang-btn" onclick="toggleLang()" id="lang-btn">🇷🇺 RU</button>
+      <button class="nav-cta" onclick="goPricing()" data-en="Get Access" data-ru="Доступ">Get Access</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== HERO: RESULT HOOK + PRICE ===== -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-badge"><span class="dot"></span><span data-en="LIVE · CRYPTO MARKET INTELLIGENCE" data-ru="ПРЯМОЙ ЭФИР · АНАЛИТИКА КРИПТОРЫНКА">LIVE · CRYPTO MARKET INTELLIGENCE</span></div>
+    <h1 class="hero">
+      <span data-en="READ THE CROWD." data-ru="ЧИТАЙ ТОЛПУ.">READ THE CROWD.</span><br>
+      <span class="accent" data-en="NOT JUST THE CHART." data-ru="НЕ ТОЛЬКО ГРАФИК.">NOT JUST THE CHART.</span>
+    </h1>
+    <div class="hero-what" data-en="ZYNQEL reads <b>what the crowd is doing</b> — funding, open interest, BTC regime — across 11 coins, and tells you exactly when to buy, where to stop, and how long to hold." data-ru="ZYNQEL читает, <b>что делает толпа</b> — funding, открытый интерес, режим BTC — по 11 монетам и говорит точно: когда купить, где стоп и сколько держать.">ZYNQEL reads <b>what the crowd is doing</b> — funding, open interest, BTC regime — across 11 coins, and tells you exactly when to buy, where to stop, and how long to hold.</div>
+    <div class="hero-cta-row">
+      <button class="btn-primary" style="width:auto;padding:18px 38px;" onclick="goPricing()" data-en="Get Access →" data-ru="Получить доступ →">Get Access →</button>
+      <button class="btn-ghost" onclick="document.getElementById('demo').scrollIntoView()" data-en="Try the live demo" data-ru="Открыть живое демо">Try the live demo</button>
+    </div>
+    <div class="hero-prices">
+      <span data-en="From <b>$47</b>/mo" data-ru="От <b>$47</b>/мес">From <b>$47</b>/mo</span>
+      <span class="sep">·</span>
+      <span data-en="<b>$700</b> lifetime" data-ru="<b>$700</b> навсегда">$700 lifetime</span>
+      <span class="sep">·</span>
+      <span data-en="11 coins · 2 modes" data-ru="11 монет · 2 режима">11 coins · 2 modes</span>
+    </div>
+  </div>
+  <div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+</section>
+
+<!-- ===== RESULT BLOCK (moved below hero) ===== -->
+<section class="section result-sec" id="result" style="padding-top:84px;padding-bottom:40px;">
+  <div class="wrap">
+    <div class="section-label" data-en="BACKTESTED ON REAL DATA" data-ru="ПРОВЕРЕНО НА РЕАЛЬНЫХ ДАННЫХ">BACKTESTED ON REAL DATA</div>
+    <div class="hero-kicker reveal" data-en="A <b>$1,000</b> account, traded on ZYNQEL's signals, historically became" data-ru="Счёт <b>$1,000</b> по сигналам ZYNQEL на истории превратился в">A <b>$1,000</b> account, traded on ZYNQEL's signals, historically became</div>
+    <div class="result-line reveal"><span class="from">$1,000</span> <span class="arrow">→</span> <span class="to">$1,420</span></div>
+    <div class="result-pct reveal" style="justify-content:center;">
+      <span><b>+42%</b> <span data-en="return" data-ru="доход">return</span></span><span class="pipe">|</span>
+      <span><b>70%</b> <span data-en="win rate" data-ru="винрейт">win rate</span></span><span class="pipe">|</span>
+      <span><b>-8%</b> <span data-en="max drawdown" data-ru="макс. просадка">max drawdown</span></span>
+    </div>
+    <div class="hero-disc" style="margin-left:auto;margin-right:auto;" data-en="Out-of-sample backtest (BTC/ETH/SOL/XRP, 2024–2026, Safe mode). Past performance does not guarantee future results. Not financial advice." data-ru="Бэктест вне выборки (BTC/ETH/SOL/XRP, 2024–2026, режим Safe). Прошлые результаты не гарантируют будущих. Не является финансовым советом.">Out-of-sample backtest (BTC/ETH/SOL/XRP, 2024–2026, Safe mode). Past performance does not guarantee future results. Not financial advice.</div>
+    <div class="hero-cta-row" style="margin-top:30px;">
+      <button class="btn-primary" style="width:auto;padding:16px 34px;" onclick="goPricing()" data-en="Get Access →" data-ru="Получить доступ →">Get Access →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROOF: product preview ===== -->
+<section class="section" id="proof">
+  <div class="wrap">
+    <div class="section-label" data-en="THIS IS WHAT YOU GET" data-ru="ВОТ ЧТО ТЫ ПОЛУЧАЕШЬ">THIS IS WHAT YOU GET</div>
+    <h2 class="section-title reveal" data-en="ONE CARD.<br>THE WHOLE CALL." data-ru="ОДНА КАРТОЧКА.<br>ВСЁ РЕШЕНИЕ.">ONE CARD.<br>THE WHOLE CALL.</h2>
+    <p class="section-sub reveal" data-en="Every coin gets a single verdict — buy, sell or wait — with the exact entry zone, stop, target and hold time. No wall of indicators." data-ru="По каждой монете — одно решение: купить, продать или ждать — с точной зоной входа, стопом, целью и сроком удержания. Без стены индикаторов.">Every coin gets a single verdict — buy, sell or wait — with the exact entry zone, stop, target and hold time. No wall of indicators.</p>
+    <div class="preview-grid">
+      <div class="app-card reveal">
+        <div class="app-top">
+          <span class="app-dot" style="background:#ff5f57"></span><span class="app-dot" style="background:#febc2e"></span><span class="app-dot" style="background:#28c840"></span>
+          <span class="app-url">zynqel.vip — AI Analysis</span>
+        </div>
+        <div class="app-body">
+          <div class="ab-head">
+            <span class="ab-pair">SOL / USD</span>
+            <div class="ab-tags"><span class="ab-tag tg-green">SAFE</span><span class="ab-tag tg-blue">Funding edge</span><span class="ab-tag tg-green">Candles OK</span></div>
+          </div>
+          <div class="ab-row">
+            <div class="ab-metric"><div class="l" data-en="PRICE" data-ru="ЦЕНА">PRICE</div><div class="price">$163.20</div><div class="ab-snap" data-en="analysis @ $162.80" data-ru="анализ @ $162.80">analysis @ $162.80</div></div>
+            <div class="ab-metric"><div class="l" data-en="UPSIDE PROB" data-ru="ВЕРОЯТНОСТЬ">UPSIDE PROB</div><div class="big" style="color:var(--green)">64%</div></div>
+            <div class="ab-metric"><div class="l" data-en="CONFIDENCE" data-ru="УВЕРЕННОСТЬ">CONFIDENCE</div><div class="big" style="color:var(--blue)">71%</div></div>
+          </div>
+          <div class="ab-bar"><div class="ab-bar-fill" style="left:0;width:64%;background:linear-gradient(90deg,var(--green),var(--blue));"></div></div>
+          <div class="ab-scale"><span data-en="BEARISH" data-ru="МЕДВЕЖИЙ">BEARISH</span><span>50%</span><span data-en="BULLISH" data-ru="БЫЧИЙ">BULLISH</span></div>
+          <div class="ab-action">
+            <div class="lab" data-en="MY ACTION" data-ru="МОЁ ДЕЙСТВИЕ">MY ACTION</div>
+            <div class="verdict" style="color:var(--green)" data-en="I would buy" data-ru="Я бы купил">I would buy</div>
+            <div class="ab-hold" data-en="🛡 SAFE · hold ~5–6 days" data-ru="🛡 SAFE · удержание ~5–6 дней">🛡 SAFE · hold ~5–6 days</div>
+            <div class="ab-zone"><span data-en="Zone:" data-ru="Зона:">Zone:</span> $160.40 — $162.70</div>
+            <div class="ab-zone"><span data-en="Stop:" data-ru="Стоп:">Stop:</span> $156.10 · <span data-en="target:" data-ru="цель:">target:</span> $171.30</div>
+            <div class="ab-cond" data-en="Low funding + BTC bullish → calm contrarian long" data-ru="Низкий funding + BTC бычий → спокойный контр-лонг">Low funding + BTC bullish → calm contrarian long</div>
+          </div>
+          <div class="ab-factors">
+            <span class="ab-factor">Funding: -0.004%</span>
+            <span class="ab-factor" data-en="BTC: bullish (filter pass)" data-ru="BTC: бычий (фильтр пройден)">BTC: bullish (filter pass)</span>
+            <span class="ab-factor">RSI: 48</span>
+            <span class="ab-factor" data-en="Volume: x1.12" data-ru="Объём: x1.12">Volume: x1.12</span>
+          </div>
+        </div>
+      </div>
+      <div class="pv-text reveal">
+        <h2 data-en="The app does the reading. You make the call." data-ru="Приложение читает рынок. Решение за тобой.">The app does the reading. You make the call.</h2>
+        <p data-en="Every signal is built from real exchange data — not vibes. The entry zone is frozen at analysis time so it never drifts. The live price updates on its own. The hold window is stated up front." data-ru="Каждый сигнал построен на реальных биржевых данных, а не на ощущениях. Зона входа замораживается в момент анализа и не уезжает. Текущая цена обновляется сама. Срок удержания указан сразу.">Every signal is built from real exchange data — not vibes. The entry zone is frozen at analysis time so it never drifts. The live price updates on its own. The hold window is stated up front.</p>
+        <ul class="pv-list">
+          <li><span class="ic">→</span><span data-en="<b>Two modes:</b> Safe (calm ~5–6 day swings) and Active (faster ~2–3 day reactions to panic)." data-ru="<b>Два режима:</b> Safe (спокойный ~5–6 дней) и Active (быстрый ~2–3 дня на панике)."><b>Two modes:</b> Safe (calm ~5–6 day swings) and Active (faster ~2–3 day reactions to panic).</span></li>
+          <li><span class="ic">→</span><span data-en="<b>BTC regime filter:</b> longs are blocked automatically when Bitcoin is in a downtrend." data-ru="<b>Фильтр режима BTC:</b> лонги авто-блокируются, когда биткоин падает."><b>BTC regime filter:</b> longs are blocked automatically when Bitcoin is in a downtrend.</span></li>
+          <li><span class="ic">→</span><span data-en="<b>Honest by design:</b> when the edge isn't there, it says WAIT — not a forced trade." data-ru="<b>Честность в основе:</b> когда преимущества нет — он говорит ЖДАТЬ, а не выдумывает сделку."><b>Honest by design:</b> when the edge isn't there, it says WAIT — not a forced trade.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROOF: edge stats ===== -->
+<section class="section" id="edge" style="background:var(--bg2);">
+  <div class="wrap">
+    <div class="section-label" data-en="THE VALIDATED EDGE" data-ru="ПРОВЕРЕННОЕ ПРЕИМУЩЕСТВО">THE VALIDATED EDGE</div>
+    <h2 class="section-title reveal" data-en="TWO MODES.<br>ONE REAL EDGE." data-ru="ДВА РЕЖИМА.<br>ОДНО РЕАЛЬНОЕ ПРЕИМУЩЕСТВО.">TWO MODES.<br>ONE REAL EDGE.</h2>
+    <p class="section-sub reveal" data-en="We tested dozens of strategies on years of real data. Most had no edge after fees. One survived out-of-sample: going long when the crowd is fearfully short — filtered by Bitcoin's trend." data-ru="Мы проверили десятки стратегий на годах реальных данных. У большинства не было преимущества после комиссий. Одна прошла проверку вне выборки: лонг, когда толпа в страхе шортит — с фильтром по тренду BTC.">We tested dozens of strategies on years of real data. Most had no edge after fees. One survived out-of-sample: going long when the crowd is fearfully short — filtered by Bitcoin's trend.</p>
+    <div class="modes">
+      <div class="mode safe reveal">
+        <div class="mode-h"><span class="mode-ic">🛡</span><span class="mode-nm">SAFE</span><span class="mode-tag" data-en="~5–6 DAY HOLD" data-ru="~5–6 ДНЕЙ">~5–6 DAY HOLD</span></div>
+        <div class="mode-desc" data-en="Enters long when funding sits at a low level — the crowd is calmly short — and BTC is bullish. Fewer signals, higher quality." data-ru="Вход в лонг, когда funding на низком уровне (толпа спокойно в шортах) и BTC бычий. Реже сигналы, выше качество.">Enters long when funding sits at a low level — the crowd is calmly short — and BTC is bullish. Fewer signals, higher quality.</div>
+        <div class="mode-stats">
+          <div class="ms g"><div class="v">70%</div><div class="k" data-en="WIN RATE" data-ru="ВИНРЕЙТ">WIN RATE</div></div>
+          <div class="ms b"><div class="v">2.40</div><div class="k" data-en="PROFIT FACTOR" data-ru="ПРОФИТ-ФАКТОР">PROFIT FACTOR</div></div>
+          <div class="ms gd"><div class="v">8%</div><div class="k" data-en="MAX DRAWDOWN" data-ru="ПРОСАДКА">MAX DRAWDOWN</div></div>
+        </div>
+      </div>
+      <div class="mode active reveal">
+        <div class="mode-h"><span class="mode-ic">⚡</span><span class="mode-nm">ACTIVE</span><span class="mode-tag" data-en="~2–3 DAY HOLD" data-ru="~2–3 ДНЯ">~2–3 DAY HOLD</span></div>
+        <div class="mode-desc" data-en="Reacts to a sharp funding drop — the crowd panicking in real time — with BTC bullish. More signals, faster, more aggressive." data-ru="Реагирует на резкое падение funding (толпа панит прямо сейчас) при бычьем BTC. Больше сигналов, быстрее, агрессивнее.">Reacts to a sharp funding drop — the crowd panicking in real time — with BTC bullish. More signals, faster, more aggressive.</div>
+        <div class="mode-stats">
+          <div class="ms g"><div class="v">53%</div><div class="k" data-en="WIN RATE" data-ru="ВИНРЕЙТ">WIN RATE</div></div>
+          <div class="ms b"><div class="v">1.73</div><div class="k" data-en="PROFIT FACTOR" data-ru="ПРОФИТ-ФАКТОР">PROFIT FACTOR</div></div>
+          <div class="ms gd"><div class="v">14%</div><div class="k" data-en="MAX DRAWDOWN" data-ru="ПРОСАДКА">MAX DRAWDOWN</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bt-wrap reveal" style="margin-top:34px;">
+      <div class="bt-top">
+        <div>
+          <div class="bt-big">$1,420<span class="pl"> ↑</span></div>
+          <div class="bt-sub" data-en="$1,000 start → $1,420 · Safe mode · out-of-sample 2024–2026" data-ru="старт $1,000 → $1,420 · режим Safe · вне выборки 2024–2026">$1,000 start → $1,420 · Safe mode · out-of-sample 2024–2026</div>
+        </div>
+        <div class="bt-kpis">
+          <div class="bt-kpi"><div class="v" style="color:var(--green)">+42%</div><div class="k" data-en="RETURN" data-ru="ДОХОД">RETURN</div></div>
+          <div class="bt-kpi"><div class="v" style="color:var(--gold)">-8%</div><div class="k" data-en="MAX DD" data-ru="ПРОСАДКА">MAX DD</div></div>
+          <div class="bt-kpi"><div class="v">70%</div><div class="k" data-en="WIN RATE" data-ru="ВИНРЕЙТ">WIN RATE</div></div>
+        </div>
+      </div>
+      <div class="chart">
+        <svg viewBox="0 0 800 240" width="100%" preserveAspectRatio="none" style="display:block">
+          <defs><linearGradient id="eq" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00e5a0" stop-opacity="0.35"/><stop offset="100%" stop-color="#00e5a0" stop-opacity="0"/></linearGradient></defs>
+          <line x1="0" y1="200" x2="800" y2="200" stroke="#15203a" stroke-width="1"/>
+          <line x1="0" y1="120" x2="800" y2="120" stroke="#10182b" stroke-width="1" stroke-dasharray="4 6"/>
+          <line x1="0" y1="60" x2="800" y2="60" stroke="#10182b" stroke-width="1" stroke-dasharray="4 6"/>
+          <path d="M0,196 L70,188 L120,196 L175,170 L230,176 L300,150 L350,158 L410,128 L470,140 L520,150 L580,110 L640,96 L700,104 L760,72 L800,64 L800,240 L0,240 Z" fill="url(#eq)"/>
+          <path d="M0,196 L70,188 L120,196 L175,170 L230,176 L300,150 L350,158 L410,128 L470,140 L520,150 L580,110 L640,96 L700,104 L760,72 L800,64" fill="none" stroke="#00e5a0" stroke-width="2.5"/>
+          <circle cx="800" cy="64" r="4" fill="#00e5a0"/>
+          <text x="8" y="54" fill="#5a6580" font-family="DM Mono" font-size="11">+42%</text>
+          <text x="8" y="196" fill="#5a6580" font-family="DM Mono" font-size="11">$1,000</text>
+        </svg>
+      </div>
+      <div class="bt-disc" data-en="⚠️ Historical out-of-sample backtest on real funding + price data. NOT a promise of future profit. Roughly half of trades lose — the edge is winners being larger than losers. On a prolonged bear market the BTC filter moves to cash. Trade only what you can afford to lose." data-ru="⚠️ Исторический бэктест вне выборки на реальных данных funding + цены. Это НЕ обещание будущей прибыли. Примерно половина сделок убыточна — преимущество в том, что выигрыши крупнее проигрышей. На затяжном медведе BTC-фильтр уводит в кэш. Торгуйте только тем, что готовы потерять.">⚠️ Historical out-of-sample backtest on real funding + price data. NOT a promise of future profit. Roughly half of trades lose — the edge is winners being larger than losers. On a prolonged bear market the BTC filter moves to cash. Trade only what you can afford to lose.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DEMO ===== -->
+<section class="section" id="demo">
+  <div class="wrap">
+    <div class="section-label" data-en="TRY IT YOURSELF" data-ru="ПОПРОБУЙ САМ">TRY IT YOURSELF</div>
+    <h2 class="section-title reveal" data-en="SEE THE ENGINE THINK" data-ru="ПОСМОТРИ, КАК ДУМАЕТ ДВИЖОК">SEE THE ENGINE THINK</h2>
+    <p class="section-sub reveal" data-en="Change the market conditions and watch ZYNQEL decide. This runs the real decision rules — funding + BTC filter — on illustrative inputs." data-ru="Меняй условия рынка и смотри, как решает ZYNQEL. Здесь работают реальные правила движка — funding + BTC-фильтр — на условных данных.">Change the market conditions and watch ZYNQEL decide. This runs the real decision rules — funding + BTC filter — on illustrative inputs.</p>
+    <div class="demo-grid">
+      <div class="demo-controls reveal">
+        <div class="dc-label" data-en="MODE" data-ru="РЕЖИМ">MODE</div>
+        <div class="chip-row" id="d-mode"><span class="chip on" data-v="safe">🛡 SAFE</span><span class="chip" data-v="active">⚡ ACTIVE</span></div>
+        <div class="dc-label" data-en="COIN" data-ru="МОНЕТА">COIN</div>
+        <div class="chip-row" id="d-coin"><span class="chip on" data-v="BTC">BTC</span><span class="chip" data-v="ETH">ETH</span><span class="chip" data-v="SOL">SOL</span><span class="chip" data-v="LTC">LTC</span></div>
+        <div class="dc-label" data-en="CROWD POSITIONING (FUNDING)" data-ru="ПОЗИЦИЯ ТОЛПЫ (FUNDING)">CROWD POSITIONING (FUNDING)</div>
+        <div class="chip-row" id="d-fund"><span class="chip on" data-v="low" data-en="Low / negative" data-ru="Низкий / минус">Low / negative</span><span class="chip" data-v="drop" data-en="Sharp drop (panic)" data-ru="Резкое падение">Sharp drop (panic)</span><span class="chip" data-v="high" data-en="High (greedy longs)" data-ru="Высокий (жадность)">High (greedy longs)</span></div>
+        <div class="dc-label" data-en="BITCOIN REGIME" data-ru="РЕЖИМ БИТКОИНА">BITCOIN REGIME</div>
+        <div class="chip-row" id="d-btc"><span class="chip on" data-v="bull" data-en="Bullish (above EMA50)" data-ru="Бычий (выше EMA50)">Bullish (above EMA50)</span><span class="chip" data-v="bear" data-en="Bearish (below EMA50)" data-ru="Медвежий (ниже EMA50)">Bearish (below EMA50)</span></div>
+        <div class="demo-note" data-en="Illustrative demo of the decision logic. The live product uses real-time data and recomputes automatically." data-ru="Демонстрация логики на условных данных. Реальный продукт использует данные в реальном времени и пересчитывает автоматически.">Illustrative demo of the decision logic. The live product uses real-time data and recomputes automatically.</div>
+      </div>
+      <div class="app-card reveal">
+        <div class="app-top">
+          <span class="app-dot" style="background:#ff5f57"></span><span class="app-dot" style="background:#febc2e"></span><span class="app-dot" style="background:#28c840"></span>
+          <span class="app-url" id="d-url">zynqel.vip — BTC · SAFE</span>
+        </div>
+        <div class="app-body">
+          <div class="ab-action" id="d-action" style="margin-top:0">
+            <div class="lab" data-en="MY ACTION" data-ru="МОЁ ДЕЙСТВИЕ">MY ACTION</div>
+            <div class="verdict" id="d-verdict">—</div>
+            <div class="ab-hold" id="d-hold">—</div>
+            <div class="ab-cond" id="d-cond">—</div>
+          </div>
+          <div style="margin-top:16px;"><div class="ab-metric"><div class="l" data-en="ENTRY QUALITY" data-ru="КАЧЕСТВО ВХОДА">ENTRY QUALITY</div><div id="d-eq" style="font-size:19px;font-weight:700;margin-top:3px;">—</div></div></div>
+          <div class="ab-factors" id="d-factors"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MID CTA (price 2nd time) ===== -->
+<section class="section" style="padding-top:20px;">
+  <div class="wrap">
+    <div class="midcta reveal">
+      <h2 data-en="READY TO TRADE WITH AN EDGE?" data-ru="ГОТОВ ТОРГОВАТЬ С ПРЕИМУЩЕСТВОМ?">READY TO TRADE WITH AN EDGE?</h2>
+      <p data-en="Full platform, 11 coins, both modes. Start monthly or lock in lifetime access." data-ru="Вся платформа, 11 монет, оба режима. Начни помесячно или закрепи доступ навсегда.">Full platform, 11 coins, both modes. Start monthly or lock in lifetime access.</p>
+      <div class="midcta-prices">
+        <div class="mcp"><div class="a">$47</div><div class="b" data-en="PER MONTH" data-ru="В МЕСЯЦ">PER MONTH</div></div>
+        <div class="mcp"><div class="a">$700</div><div class="b" data-en="LIFETIME" data-ru="НАВСЕГДА">LIFETIME</div></div>
+      </div>
+      <button class="btn-primary" onclick="goPricing()" data-en="Get Access Now →" data-ru="Получить доступ →">Get Access Now →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== EDUCATION (moved down): 11 streams ===== -->
+<section class="section" id="data" style="background:var(--bg2);">
+  <div class="wrap">
+    <div class="section-label" data-en="WHAT FEEDS A SIGNAL" data-ru="ЧТО ПИТАЕТ СИГНАЛ">WHAT FEEDS A SIGNAL</div>
+    <h2 class="section-title reveal" data-en="11 SIGNALS.<br>ONE VERDICT." data-ru="11 СИГНАЛОВ.<br>ОДНО РЕШЕНИЕ.">11 SIGNALS.<br>ONE VERDICT.</h2>
+    <p class="section-sub reveal" data-en="Most tools watch price and stop there. ZYNQEL pulls the data that shows what traders actually do with their money — spot, futures and macro." data-ru="Большинство сервисов смотрят на цену — и всё. ZYNQEL берёт данные, которые показывают, что трейдеры реально делают со своими деньгами — спот, фьючерсы, макро.">Most tools watch price and stop there. ZYNQEL pulls the data that shows what traders actually do with their money — spot, futures and macro.</p>
+    <div class="streams" id="streams"></div>
+    <div class="streams-foot reveal" data-en="Every forecast is recomputed from <b>all 11</b> streams — across <b>11 coins</b>, on demand." data-ru="Каждый прогноз пересчитывается из <b>всех 11</b> источников — по <b>11 монетам</b>, по запросу.">Every forecast is recomputed from <b>all 11</b> streams — across <b>11 coins</b>, on demand.</div>
+  </div>
+</section>
+
+<!-- ===== EDUCATION: features ===== -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-label" data-en="THE PLATFORM" data-ru="ПЛАТФОРМА">THE PLATFORM</div>
+    <h2 class="section-title reveal" data-en="BUILT FOR<br>REAL DECISIONS" data-ru="СОЗДАНО ДЛЯ<br>РЕАЛЬНЫХ РЕШЕНИЙ">BUILT FOR<br>REAL DECISIONS</h2>
+    <div class="feat-grid" id="features-grid"></div>
+  </div>
+</section>
+
+<!-- ===== EDUCATION: honesty ===== -->
+<section class="section" id="honesty" style="background:var(--bg2);">
+  <div class="wrap">
+    <div class="section-label" data-en="NO HYPE" data-ru="БЕЗ ХАЙПА">NO HYPE</div>
+    <h2 class="section-title reveal" data-en="WHY YOU CAN<br>TRUST THE NUMBERS" data-ru="ПОЧЕМУ ЦИФРАМ<br>МОЖНО ВЕРИТЬ">WHY YOU CAN<br>TRUST THE NUMBERS</h2>
+    <p class="section-sub reveal" data-en="Most signal services show cherry-picked wins. We show the method — including the parts that aren't glamorous." data-ru="Большинство сервисов показывают только удачные сделки. Мы показываем метод — включая то, что не выглядит красиво.">Most signal services show cherry-picked wins. We show the method — including the parts that aren't glamorous.</p>
+    <div class="honest" id="honest-grid"></div>
+  </div>
+</section>
+
+<!-- ===== FINAL PRICING + LEAD ===== -->
+<section class="section" id="pricing">
+  <div class="wrap">
+    <div class="section-label" data-en="ACCESS" data-ru="ДОСТУП">ACCESS</div>
+    <h2 class="section-title reveal" style="text-align:center" data-en="PICK YOUR PLAN" data-ru="ВЫБЕРИ ТАРИФ">PICK YOUR PLAN</h2>
+    <p class="section-sub reveal" data-en="Same full platform on both. Monthly to try it, lifetime to never think about it again." data-ru="На обоих — вся платформа целиком. Помесячно, чтобы попробовать; навсегда, чтобы забыть о подписке.">Same full platform on both. Monthly to try it, lifetime to never think about it again.</p>
+    <div class="price-grid">
+      <div class="plan reveal">
+        <div class="plan-nm" data-en="MONTHLY" data-ru="ПОДПИСКА">MONTHLY</div>
+        <div class="plan-price">$47<span class="per" data-en="/month" data-ru="/мес">/month</span></div>
+        <div class="plan-desc" data-en="Full access, billed monthly. Cancel anytime." data-ru="Полный доступ, оплата ежемесячно. Отмена в любой момент.">Full access, billed monthly. Cancel anytime.</div>
+        <ul class="plan-list">
+          <li><span class="ic">✓</span><span data-en="All 11 coins · Safe + Active modes" data-ru="Все 11 монет · режимы Safe + Active">All 11 coins · Safe + Active modes</span></li>
+          <li><span class="ic">✓</span><span data-en="11 live data streams + BTC filter" data-ru="11 живых источников + BTC-фильтр">11 live data streams + BTC filter</span></li>
+          <li><span class="ic">✓</span><span data-en="Entry zone, stop, target & hold time" data-ru="Зона входа, стоп, цель и срок">Entry zone, stop, target & hold time</span></li>
+          <li><span class="ic">✓</span><span data-en="Alerts · news · dashboard" data-ru="Алерты · новости · дашборд">Alerts · news · dashboard</span></li>
+        </ul>
+      </div>
+      <div class="plan feat-plan reveal">
+        <div class="plan-badge" data-en="BEST VALUE" data-ru="ВЫГОДНО">BEST VALUE</div>
+        <div class="plan-nm" data-en="LIFETIME" data-ru="НАВСЕГДА">LIFETIME</div>
+        <div class="plan-price">$700<span class="per" data-en=" once" data-ru=" разово"> once</span></div>
+        <div class="plan-desc" data-en="Pay once, keep it forever. Pays for itself in ~15 months vs monthly." data-ru="Заплати один раз — доступ навсегда. Окупается за ~15 месяцев против подписки.">Pay once, keep it forever. Pays for itself in ~15 months vs monthly.</div>
+        <ul class="plan-list">
+          <li><span class="ic">✓</span><span data-en="Everything in Monthly" data-ru="Всё из подписки">Everything in Monthly</span></li>
+          <li><span class="ic">✓</span><span data-en="All future coins & features included" data-ru="Все будущие монеты и функции включены">All future coins & features included</span></li>
+          <li><span class="ic">✓</span><span data-en="No recurring payments, ever" data-ru="Никаких регулярных платежей">No recurring payments, ever</span></li>
+          <li><span class="ic">✓</span><span data-en="Priority support" data-ru="Приоритетная поддержка">Priority support</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="lead reveal" id="lead">
+      <div style="font-family:'DM Mono';font-size:11px;color:var(--green);letter-spacing:2px;text-align:center;margin-bottom:16px;" data-en="REQUEST ACCESS" data-ru="ЗАПРОСИТЬ ДОСТУП">REQUEST ACCESS</div>
+      <input type="text" id="lf-name" placeholder="Full Name" autocomplete="name"/>
+      <input type="email" id="lf-email" placeholder="Email" autocomplete="email"/>
+      <input type="text" id="lf-phone" placeholder="Telegram / Phone" autocomplete="tel"/>
+      <button class="pricing-cta" onclick="submitLead()" id="lf-btn"><span id="lf-btn-txt" data-en="Request Access" data-ru="Запросить доступ">Request Access</span></button>
+      <div id="lf-msg"></div>
+      <div class="pricing-note" id="lf-note" data-en="We reply within 10 minutes · secure checkout sent by us" data-ru="Отвечаем в течение 10 минут · ссылку на оплату пришлём мы">We reply within 10 minutes · secure checkout sent by us</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq" style="background:var(--bg2);">
+  <div class="wrap">
+    <div class="section-label" data-en="FAQ" data-ru="ВОПРОСЫ">FAQ</div>
+    <h2 class="section-title reveal" data-en="STRAIGHT ANSWERS" data-ru="ЧЕСТНЫЕ ОТВЕТЫ">STRAIGHT ANSWERS</h2>
+    <div class="faq-list" id="faq-list"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-in">
+      <div>
+        <div class="logo" style="margin-bottom:14px;"><div class="logo-ic">Z</div><div class="logo-tx">ZYNQEL</div></div>
+        <div class="foot-disc" data-en="ZYNQEL is a market-analytics tool, not a financial advisor, broker or investment service. Nothing here is financial advice or a recommendation to buy or sell any asset. All performance figures are historical backtests on past data and do not guarantee future results. Cryptocurrency trading carries substantial risk of loss. Only trade with capital you can afford to lose." data-ru="ZYNQEL — это инструмент рыночной аналитики, а не финансовый советник, брокер или инвестиционный сервис. Ничто здесь не является финансовым советом или рекомендацией покупать/продавать актив. Все цифры доходности — исторические бэктесты на прошлых данных и не гарантируют будущих результатов. Торговля криптовалютой несёт существенный риск потерь. Торгуйте только тем капиталом, который готовы потерять.">ZYNQEL is a market-analytics tool, not a financial advisor, broker or investment service. Nothing here is financial advice or a recommendation to buy or sell any asset. All performance figures are historical backtests on past data and do not guarantee future results. Cryptocurrency trading carries substantial risk of loss. Only trade with capital you can afford to lose.</div>
+      </div>
+      <div class="foot-links">
+        <a href="#proof" data-en="Proof" data-ru="Доказательство">Proof</a>
+        <a href="#data" data-en="Data" data-ru="Данные">Data</a>
+        <a href="#pricing" data-en="Pricing" data-ru="Цена">Pricing</a>
+        <a href="#faq" data-en="FAQ" data-ru="Вопросы">FAQ</a>
+      </div>
+    </div>
+    <div class="foot-copy">© 2026 ZYNQEL · zynqel.vip · <span data-en="Built for traders who want the truth." data-ru="Для трейдеров, которым нужна правда.">Built for traders who want the truth.</span></div>
+  </div>
+</footer>
+
+<script>
+var currentLang='en';
+function applyLang(){
+  document.querySelectorAll('[data-en]').forEach(function(el){
+    var v=el.getAttribute(currentLang==='ru'?'data-ru':'data-en');
+    if(v!=null) el.innerHTML=v;
+  });
+  document.getElementById('lang-btn').textContent=currentLang==='ru'?'🇬🇧 EN':'🇷🇺 RU';
+  document.documentElement.lang=currentLang;
+  document.body.classList.toggle('lang-ru', currentLang==='ru');
+  updateLeadPlaceholders();
+  renderDemo();
+}
+function toggleLang(){currentLang=currentLang==='ru'?'en':'ru';applyLang();}
+function goPricing(){document.getElementById('pricing').scrollIntoView();}
+
+var coins=[['BTC',72788,-0.8],['ETH',2640,1.2],['SOL',163,2.4],['XRP',2.18,0.6],['SUI',1.84,-1.1],['AVAX',27.6,0.9],['DOGE',0.21,3.1],['LINK',16.4,1.7],['TON',4.9,2.9],['LTC',92.3,0.4],['NEAR',4.21,2.8]];
+function fmt(n){return n>=1000?'$'+n.toLocaleString('en-US',{maximumFractionDigits:0}):'$'+n.toFixed(n<10?2:1);}
+(function(){var t=document.getElementById('ticker');function row(){return coins.map(function(c){var up=c[2]>=0;return '<span class="ticker-item"><span class="t-name">'+c[0]+'</span><span class="t-price">'+fmt(c[1])+'</span><span class="'+(up?'t-up':'t-down')+'">'+(up?'▲':'▼')+Math.abs(c[2])+'%</span></span>';}).join('');}t.innerHTML=row()+row();})();
+
+var streams=[
+  ['📊',{en:'Funding rate',ru:'Ставка финансирования'},{en:'What longs pay shorts — the crowd\'s bias',ru:'Что лонги платят шортам — перекос толпы'},'BINANCE FUTURES'],
+  ['🔁',{en:'Open interest',ru:'Открытый интерес'},{en:'How much money is in open positions',ru:'Сколько денег в открытых позициях'},'BINANCE FUTURES'],
+  ['⚖️',{en:'Taker buy/sell',ru:'Taker buy/sell'},{en:'Aggressive buyers vs sellers right now',ru:'Агрессивные покупатели против продавцов'},'BINANCE FUTURES'],
+  ['📖',{en:'Order-book skew',ru:'Перекос стакана'},{en:'Bid/ask imbalance near price',ru:'Дисбаланс заявок у цены'},'BINANCE FUTURES'],
+  ['₿',{en:'BTC regime',ru:'Режим BTC'},{en:'Bitcoin trend filter — blocks bad longs',ru:'Фильтр тренда BTC — блокирует плохие лонги'},'DAILY EMA50'],
+  ['🕯️',{en:'Price candles',ru:'Свечи цены'},{en:'1h / 4h / 1d structure, EMA, RSI, ATR',ru:'1h / 4h / 1d структура, EMA, RSI, ATR'},'BINANCE'],
+  ['😨',{en:'Fear & Greed',ru:'Страх и жадность'},{en:'Market-wide sentiment extreme detector',ru:'Детектор экстремальных настроений'},'ALTERNATIVE.ME'],
+  ['🏛️',{en:'Fed rate',ru:'Ставка ФРС'},{en:'Macro liquidity backdrop',ru:'Макро-фон ликвидности'},'FRED'],
+  ['📈',{en:'CPI / inflation',ru:'CPI / инфляция'},{en:'Macro risk context',ru:'Макро-контекст риска'},'FRED'],
+  ['📰',{en:'News sentiment',ru:'Настроение новостей'},{en:'Headline bias across major crypto',ru:'Перекос заголовков по крупной крипте'},'NEWSDATA'],
+  ['📉',{en:'Volume profile',ru:'Профиль объёма'},{en:'Confirmation strength behind moves',ru:'Сила подтверждения за движением'},'BINANCE'],
+];
+(function(){document.getElementById('streams').innerHTML=streams.map(function(s){return '<div class="stream reveal"><div class="ic">'+s[0]+'</div><div class="nm" data-en="'+s[1].en+'" data-ru="'+s[1].ru+'">'+s[1].en+'</div><div class="ds" data-en="'+s[2].en+'" data-ru="'+s[2].ru+'">'+s[2].en+'</div><div class="src">'+s[3]+'</div></div>';}).join('');})();
+
+var feats=[
+  ['🎯',{en:'One clear verdict',ru:'Одно ясное решение'},{en:'Buy, sell or wait — never a wall of indicators to decode.',ru:'Купить, продать или ждать — без стены индикаторов.'}],
+  ['🧊',{en:'Frozen entry zones',ru:'Замороженные зоны'},{en:'The zone is locked at analysis time and never drifts with price.',ru:'Зона фиксируется в момент анализа и не уезжает за ценой.'}],
+  ['🛡️',{en:'BTC risk filter',ru:'BTC-фильтр риска'},{en:'Longs auto-blocked when Bitcoin is in a downtrend.',ru:'Лонги авто-блокируются, когда BTC падает.'}],
+  ['⚡',{en:'Two speeds',ru:'Две скорости'},{en:'Safe for calm swings, Active for fast reactions to panic.',ru:'Safe для спокойных свингов, Active — быстрая реакция на панику.'}],
+  ['🪙',{en:'11 coins',ru:'11 монет'},{en:'BTC, ETH, SOL, XRP, SUI, AVAX, DOGE, LINK, TON, LTC, NEAR.',ru:'BTC, ETH, SOL, XRP, SUI, AVAX, DOGE, LINK, TON, LTC, NEAR.'}],
+  ['🔔',{en:'Live alerts',ru:'Живые алерты'},{en:'Sentiment extremes, big moves and macro flags as they happen.',ru:'Экстремумы настроений, крупные движения и макро-сигналы.'}],
+  ['🌐',{en:'EN / RU',ru:'EN / RU'},{en:'Full interface in English and Russian.',ru:'Полный интерфейс на английском и русском.'}],
+  ['🔎',{en:'Full transparency',ru:'Полная прозрачность'},{en:'Every signal shows the data behind it — funding, BTC, RSI, volume.',ru:'Каждый сигнал показывает данные за ним — funding, BTC, RSI, объём.'}],
+];
+(function(){document.getElementById('features-grid').innerHTML=feats.map(function(f){return '<div class="feat reveal"><div class="ic">'+f[0]+'</div><h3 data-en="'+f[1].en+'" data-ru="'+f[1].ru+'">'+f[1].en+'</h3><p data-en="'+f[2].en+'" data-ru="'+f[2].ru+'">'+f[2].en+'</p></div>';}).join('');})();
+
+var honest=[
+  ['🔬',{en:'Out-of-sample tested',ru:'Проверено вне выборки'},{en:'Strategies are tuned on one slice of history and proven on data they never saw. If it only works in-sample, we reject it.',ru:'Стратегии настраиваются на одном куске истории и проверяются на данных, которых не видели. Работает только в выборке — отвергаем.'}],
+  ['🗑️',{en:'We reject overfits',ru:'Мы отбрасываем переподгонку'},{en:'Dozens of "profitable" ideas were thrown out because they collapsed on fresh data. Only the funding edge survived.',ru:'Десятки «прибыльных» идей выкинуты, потому что разваливались на новых данных. Выжило только funding-преимущество.'}],
+  ['⚖️',{en:'~Half of trades lose',ru:'~Половина сделок в минус'},{en:'We don\'t hide it. The edge is that winners are bigger than losers — not that we\'re always right.',ru:'Мы это не прячем. Преимущество в том, что выигрыши крупнее проигрышей, а не в том, что мы всегда правы.'}],
+  ['💵',{en:'Modest, real edge',ru:'Скромное, но реальное'},{en:'No "10x guaranteed". A profit factor of 2.40 on Safe is strong and believable — not a fantasy.',ru:'Никаких «гарантированных 10x». Профит-фактор 2.40 на Safe — это сильно и правдоподобно, а не фантастика.'}],
+];
+(function(){document.getElementById('honest-grid').innerHTML=honest.map(function(h){return '<div class="hns reveal"><div class="ic">'+h[0]+'</div><div><h4 data-en="'+h[1].en+'" data-ru="'+h[1].ru+'">'+h[1].en+'</h4><p data-en="'+h[2].en+'" data-ru="'+h[2].ru+'">'+h[2].en+'</p></div></div>';}).join('');})();
+
+var faqs=[
+  [{en:'Is this a crystal ball that predicts price?',ru:'Это магический шар, предсказывающий цену?'},{en:'No — and anyone claiming that is lying. ZYNQEL has a measurable, backtested edge based on crowd positioning (funding). It tilts odds in your favour over many trades; it does not predict any single candle.',ru:'Нет — и кто это обещает, тот врёт. У ZYNQEL есть измеримое, проверенное на истории преимущество на основе позиционирования толпы (funding). Оно смещает шансы в вашу пользу на длинной серии сделок, но не предсказывает отдельную свечу.'}],
+  [{en:'What exactly is the edge?',ru:'В чём именно преимущество?'},{en:'Going long when funding shows the crowd is fearfully short, filtered by Bitcoin\'s trend. Out-of-sample across BTC/ETH/SOL/XRP this gave ~70% win rate and a 2.40 profit factor on Safe mode.',ru:'Вход в лонг, когда funding показывает, что толпа в страхе шортит, с фильтром по тренду BTC. Вне выборки на BTC/ETH/SOL/XRP это дало ~70% винрейта и профит-фактор 2.40 в режиме Safe.'}],
+  [{en:'Will I definitely make money?',ru:'Я точно заработаю?'},{en:'No. Roughly half of all trades lose, and past results never guarantee the future. On a long bear market the BTC filter keeps you in cash. This is a tool to improve decisions, not a money printer.',ru:'Нет. Примерно половина сделок убыточна, и прошлое не гарантирует будущего. На долгом медвежьем рынке BTC-фильтр держит вас в кэше. Это инструмент для улучшения решений, а не печатный станок.'}],
+  [{en:'Do I need to trade all day?',ru:'Нужно ли торговать весь день?'},{en:'No. Safe produces about 5 signals/month and Active about 10 across all 11 coins, held for days — this is swing trading, not minute scalping.',ru:'Нет. Safe даёт около 5 сигналов в месяц, Active — около 10 на все 11 монет, удержание днями. Это свинг-торговля, а не минутный скальпинг.'}],
+  [{en:'Monthly or lifetime — what\'s the difference?',ru:'Подписка или навсегда — в чём разница?'},{en:'Identical platform. $47/mo lets you try it with no commitment. $700 lifetime is a one-time payment that includes all future updates and pays for itself versus monthly in about 15 months.',ru:'Платформа одинаковая. $47/мес — попробовать без обязательств. $700 навсегда — разовый платёж со всеми будущими обновлениями, окупается против подписки примерно за 15 месяцев.'}],
+  [{en:'How do I pay and get in?',ru:'Как оплатить и получить доступ?'},{en:'Send a request with the form above. We reply within 10 minutes with a secure checkout link and your login. No card details are entered on this page.',ru:'Оставьте заявку в форме выше. Мы ответим в течение 10 минут со ссылкой на безопасную оплату и доступом. Данные карты на этой странице не вводятся.'}],
+];
+(function(){document.getElementById('faq-list').innerHTML=faqs.map(function(f){return '<div class="faq-item" onclick="this.classList.toggle(\'open\')"><div class="faq-q"><span data-en="'+f[0].en+'" data-ru="'+f[0].ru+'">'+f[0].en+'</span><span class="pm">+</span></div><div class="faq-a" data-en="'+f[1].en+'" data-ru="'+f[1].ru+'">'+f[1].en+'</div></div>';}).join('');})();
+
+var dState={mode:'safe',coin:'BTC',fund:'low',btc:'bull'};
+function bindChips(id,key){document.getElementById(id).querySelectorAll('.chip').forEach(function(c){c.addEventListener('click',function(){this.parentNode.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on');});this.classList.add('on');dState[key]=this.getAttribute('data-v');renderDemo();});});}
+bindChips('d-mode','mode');bindChips('d-coin','coin');bindChips('d-fund','fund');bindChips('d-btc','btc');
+function renderDemo(){
+  var ru=currentLang==='ru';
+  var triggered = dState.mode==='safe' ? (dState.fund==='low') : (dState.fund==='drop');
+  var isLong = triggered && dState.btc==='bull';
+  var v=document.getElementById('d-verdict'),hold=document.getElementById('d-hold'),cond=document.getElementById('d-cond'),eq=document.getElementById('d-eq'),box=document.getElementById('d-action'),fac=document.getElementById('d-factors');
+  document.getElementById('d-url').textContent='zynqel.vip — '+dState.coin+' · '+dState.mode.toUpperCase();
+  hold.textContent=dState.mode==='safe'?(ru?'🛡 SAFE · удержание ~5–6 дней':'🛡 SAFE · hold ~5–6 days'):(ru?'⚡ ACTIVE · удержание ~2–3 дня':'⚡ ACTIVE · hold ~2–3 days');
+  if(isLong){
+    v.textContent=ru?'Я бы купил':'I would buy';v.style.color='var(--green)';
+    box.style.background='linear-gradient(135deg,#0d2820,#0a1424)';box.style.borderColor='#15392c';
+    eq.textContent=ru?'СИЛЬНЫЙ ВХОД':'STRONG ENTRY';eq.style.color='var(--green)';
+    cond.textContent=dState.mode==='safe'?(ru?'Низкий funding + BTC бычий → спокойный контр-лонг':'Low funding + BTC bullish → calm contrarian long'):(ru?'Резкое падение funding + BTC бычий → контр-лонг на панике':'Sharp funding drop + BTC bullish → contrarian long on panic');
+  } else if(triggered && dState.btc==='bear'){
+    v.textContent=ru?'Я бы подождал':'I would wait';v.style.color='var(--gold)';
+    box.style.background='linear-gradient(135deg,#201a0a,#14110a)';box.style.borderColor='#3a2f15';
+    eq.textContent=ru?'НЕТ ВХОДА':'NO ENTRY';eq.style.color='var(--muted2)';
+    cond.textContent=ru?'Сигнал есть, но BTC в нисходящем тренде — лонги заблокированы (фильтр риска)':'Signal present, but BTC is in a downtrend — longs blocked (risk filter)';
+  } else {
+    v.textContent=ru?'Я бы подождал':'I would wait';v.style.color='var(--muted2)';
+    box.style.background='#ffffff05';box.style.borderColor='var(--border2)';
+    eq.textContent=ru?'НЕТ ВХОДА':'NO ENTRY';eq.style.color='var(--muted2)';
+    cond.textContent=dState.mode==='safe'?(ru?'Funding не в нижней зоне — толпа не перекошена в шорт':'Funding not in the low zone — crowd not short-skewed'):(ru?'Нет резкого падения funding — толпа не паникует':'No sharp funding drop — crowd not panicking');
+  }
+  var fundTxt={low:'-0.004%',drop:'-0.021%',high:'+0.032%'}[dState.fund];
+  var btcTxt=dState.btc==='bull'?(ru?'бычий (фильтр пройден)':'bullish (filter pass)'):(ru?'медвежий — лонги заблокированы':'bearish — longs blocked');
+  fac.innerHTML='<span class="ab-factor">Funding: '+fundTxt+'</span><span class="ab-factor">BTC: '+btcTxt+'</span><span class="ab-factor">'+dState.coin+' / USD</span>';
+}
+
+function updateLeadPlaceholders(){var ru=currentLang==='ru';var n=document.getElementById('lf-name'),e=document.getElementById('lf-email'),p=document.getElementById('lf-phone');if(n)n.placeholder=ru?'Имя и Фамилия':'Full Name';if(e)e.placeholder=ru?'Email':'Email';if(p)p.placeholder=ru?'Telegram / Телефон':'Telegram / Phone';}
+function submitLead(){
+  var name=document.getElementById('lf-name').value.trim();
+  var email=document.getElementById('lf-email').value.trim();
+  var phone=document.getElementById('lf-phone').value.trim();
+  var msg=document.getElementById('lf-msg');var btn=document.getElementById('lf-btn');var btnTxt=document.getElementById('lf-btn-txt');var ru=currentLang==='ru';
+  if(!name||!email||!phone){msg.innerHTML='<div style="color:#ff4757;font-size:13px;text-align:center;margin-top:10px;">'+(ru?'⚠️ Заполните все поля':'⚠️ Please fill all fields')+'</div>';return;}
+  btn.disabled=true;btnTxt.innerHTML=ru?'⏳ Отправляем...':'⏳ Sending...';msg.innerHTML='';
+  var url='https://script.google.com/macros/s/AKfycbxosp-kRRy2nxBL1FyHLIhULbO9cbAJf5HynrTkjH6gx2_Fo4dFHAcqvsLQtNlLH9KA/exec?name='+encodeURIComponent(name)+'&email='+encodeURIComponent(email)+'&phone='+encodeURIComponent(phone)+'&lang='+currentLang;
+  var done=function(){msg.innerHTML='<div style="background:#00e5a012;border:1px solid #00e5a033;border-radius:8px;padding:12px;color:#00e5a0;font-size:13px;text-align:center;line-height:1.5;margin-top:10px;">'+(ru?'✅ Заявка отправлена! Свяжемся в течение 10 минут.':'✅ Request sent! We will contact you within 10 minutes.')+'</div>';btnTxt.textContent=ru?'✓ Отправлено':'✓ Sent';document.getElementById('lf-name').value='';document.getElementById('lf-email').value='';document.getElementById('lf-phone').value='';};
+  fetch(url,{mode:'no-cors'}).then(done).catch(done);
+}
+
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+function observeReveals(){document.querySelectorAll('.reveal:not(.in)').forEach(function(el){io.observe(el);});}
+
+applyLang();
+renderDemo();
+observeReveals();
+</script>
+</body>
+</html>
